@@ -48,7 +48,7 @@ const int VGA_ROWS = 25;
 
 int term_col = 0;
 int term_row = 0;
-uint8_t term_color = BG_BLACK || FG_WHITE;
+uint8_t term_color = BG_BLACK | FG_WHITE;
 
 void term_init(){
 	for(int col = 0; col < VGA_COLS; col++){
