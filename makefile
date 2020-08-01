@@ -13,8 +13,14 @@ obj = $(cobj:.S=.o)
 	$(CC) $(CFLAGS) $< -o $@
 
 kernel: $(obj)
-	$(CC) $(LDFLAGS) $^ -o kernel.elf
+	$(CC) $(LDFLAGS) $^ -o kernel.bin
+	mkdir -p isodir/boot/grub
+	cp kernel.bin ./isodir/boot/kernel.bin
+	cp grub.cfg ./isodir/boot/grub/grub.cfg
+	rm -f os.iso
+	grub-mkrescue -o os.iso isodir
 
 .PHONY: clean
 clean:
-	rm $(obj) kernel.elf
+	rm $(obj) kernel.bin os.iso
+	rm -r isodir
