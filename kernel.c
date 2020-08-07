@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
+#include "descriptor_tables.h"
 
 #if defined(__linux__)
 	#error "This code must be compiled with a cross-compiler"
@@ -85,6 +86,8 @@ void print(const char* str){
 }
 
 void kernel_main(){
+	uint8_t gdt[24];
+	init_descriptor_tables(gdt);
 	term_init();
 	
 	term_color = BG_BLACK | FG_GREEN;
