@@ -14,18 +14,17 @@
 	.long MB_CHECKSUM
 
 .section .bss
-
 	.align 16
+	gdtr:
+	.word 0
+	gdtr2:
+	.long 0
 	stack_bottom:
 	.skip 4096
 	stack_top:
 
 
 .section .text
-	gdtr:
-	.word 0
-	gdtr2:
-	.long 0
 	set_gdt:
 	mov %eax, 4(%esp)
 	mov (gdtr2), %eax
@@ -33,6 +32,28 @@
 	mov (gdtr), %ax
 	lgdt (gdtr)
 	ret
+
+.global load_page_directory
+	load_page_directory:
+	push %ebp
+	mov %esp, %ebp
+	mov 8(%esp), %eax
+	mov %eax, %cr3
+	mov %ebp, %esp
+	pop %ebp
+	ret
+
+.global enable_paging
+	enable_paging:
+	push %ebp
+	mov %esp, %ebp
+	mov %cr0, %eax
+	or $0x80000000, %eax
+	mov %eax, %cr0
+	mov %ebp, %esp
+	pop %ebp
+	ret
+
 	start:
 	mov $stack_top, %esp
 	call kernel_main
