@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "descriptor_tables.h"
 
-
+TSS tss;
 
 void encodeGdtEntry(uint8_t *target, struct GDT _source)
 {
@@ -35,7 +35,7 @@ void encodeGdtEntry(uint8_t *target, struct GDT _source)
 }
 
 void init_descriptor_tables(){
-	struct GDT gdt_s[3];
+	struct GDT gdt_s[4];
 	gdt_s[0].base = 0;
 	gdt_s[0].limit = 0;
 	gdt_s[0].type = 0;
@@ -48,11 +48,25 @@ void init_descriptor_tables(){
 	gdt_s[2].limit = 0xffffffff;
 	gdt_s[2].type = 0x92;
 
+	gdt_s[3].base = (uint32_t)&tss;
+	gdt_s[3].limit = 104;
+	gdt_s[3].type = 0x89;
+
 	extern uint8_t gdt;
 	encodeGdtEntry(&gdt, gdt_s[0]);
 	encodeGdtEntry(&gdt+8, gdt_s[1]);
 	encodeGdtEntry(&gdt+16, gdt_s[2]);
+	encodeGdtEntry(&gdt+24, gdt_s[3]);
 	
+	extern void syscall_stack;
+	tss.ss0 = 0x10;
+	tss.esp0 = &syscall_stack;
+	tss.iopb = 104;
+
 	extern void set_gdt(uint32_t gdt, uint16_t size);
-	set_gdt((uint32_t)&gdt, 24);
+	set_gdt((uint32_t)&gdt, 32);
+
+	// Load TSS
+	extern void set_tss(uint16_t segment);
+	set_tss(0x18);
 }

@@ -15,7 +15,7 @@
 
 .section .data
 .global gdt
-	gdt:
+	/*gdt:
 	.long 0
 	.long 0
 	.word 0xffff
@@ -29,15 +29,22 @@
 	.byte 0
 	.byte 0x92
 	.byte 0xCF
-	.byte 0
+	.byte 0*/
+	
 	.align 16
 .section .bss
+	gdt:
+	.skip 32
 	gdtr:
 	.word 0
 	.long 0
 	stack_bottom:
 	.skip 4096
 	stack_top:
+	syscall_stack_bottom:
+	.skip 4096
+	.global syscall_stack
+	syscall_stack:
 
 
 .section .text
@@ -51,6 +58,11 @@
 
 	jmp $0x08, $_flush
 	_flush:
+	ret
+.global set_tss
+	set_tss:
+	mov 4(%esp), %ax
+	ltr %ax
 	ret
 
 .global load_page_directory
