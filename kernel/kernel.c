@@ -86,10 +86,12 @@ void print(const char* str){
 		putc(str[i]);
 }
 
-void kernel_main(){
-	uint8_t gdt[24];
-	init_descriptor_tables(gdt);
+void init(){
+	init_descriptor_tables();
 	setup_paging();
+}
+
+void kernel_main(){
 	term_init();
 	
 	term_color = BG_BLACK | FG_GREEN;

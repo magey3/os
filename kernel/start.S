@@ -13,11 +13,27 @@
 	.long MB_FLAGS
 	.long MB_CHECKSUM
 
-.section .bss
+.section .data
+.global gdt
+	gdt:
+	.long 0
+	.long 0
+	.word 0xffff
+	.word 0
+	.byte 0
+	.byte 0x9a
+	.byte 0xCF
+	.byte 0
+	.word 0xffff
+	.word 0
+	.byte 0
+	.byte 0x92
+	.byte 0xCF
+	.byte 0
 	.align 16
+.section .bss
 	gdtr:
 	.word 0
-	gdtr2:
 	.long 0
 	stack_bottom:
 	.skip 4096
@@ -26,11 +42,15 @@
 
 .section .text
 	set_gdt:
-	mov %eax, 4(%esp)
-	mov (gdtr2), %eax
-	mov %ax, 8(%esp)
-	mov (gdtr), %ax
-	lgdt (gdtr)
+	mov $gdtr, %ebx
+	mov 4(%esp), %eax
+	mov %eax, 2(%ebx)
+	mov 8(%esp), %ax
+	mov %ax, (%ebx)
+	lgdt (%ebx)
+
+	jmp $0x08, $_flush
+	_flush:
 	ret
 
 .global load_page_directory
@@ -54,9 +74,10 @@
 	pop %ebp
 	ret
 
+.extern init
 	start:
 	mov $stack_top, %esp
-	call kernel_main
+	call init
 
 	hang:
 	cli

@@ -3,8 +3,8 @@
 struct GDT {
 	uint32_t base;
 	uint32_t limit;
-	uint32_t type;
+	uint8_t type;
 };
 
-void init_descriptor_tables(uint8_t* gdt);
+void init_descriptor_tables();
 #endif

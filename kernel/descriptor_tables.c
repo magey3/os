@@ -2,10 +2,11 @@
 #include <stdint.h>
 #include "descriptor_tables.h"
 
-extern void set_gdt(uint8_t* gdt, uint8_t size);
 
-void encodeGdtEntry(uint8_t *target, struct GDT source)
+
+void encodeGdtEntry(uint8_t *target, struct GDT _source)
 {
+	struct GDT source = _source;
 	// Check the limit to make sure that it can be encoded
 	if ((source.limit > 65536) && ((source.limit & 0xFFF) != 0xFFF)) {
 		return;
@@ -33,7 +34,7 @@ void encodeGdtEntry(uint8_t *target, struct GDT source)
 	target[5] = source.type;
 }
 
-void init_descriptor_tables(uint8_t* gdt){
+void init_descriptor_tables(){
 	struct GDT gdt_s[3];
 	gdt_s[0].base = 0;
 	gdt_s[0].limit = 0;
@@ -47,9 +48,11 @@ void init_descriptor_tables(uint8_t* gdt){
 	gdt_s[2].limit = 0xffffffff;
 	gdt_s[2].type = 0x92;
 
-	encodeGdtEntry(gdt, gdt_s[0]);
-	encodeGdtEntry(gdt+8, gdt_s[1]);
-	encodeGdtEntry(gdt+16, gdt_s[2]);
-
-	set_gdt(gdt, 24);
+	extern uint8_t gdt;
+	encodeGdtEntry(&gdt, gdt_s[0]);
+	encodeGdtEntry(&gdt+8, gdt_s[1]);
+	encodeGdtEntry(&gdt+16, gdt_s[2]);
+	
+	extern void set_gdt(uint32_t gdt, uint16_t size);
+	set_gdt((uint32_t)&gdt, 24);
 }
