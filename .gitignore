@@ -1,5 +1,3 @@
 *.bin
 *.o
 *.iso
-isodir/
-isodir/boot/grub/grub.cfg

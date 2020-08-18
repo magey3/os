@@ -12,13 +12,15 @@ void setup_paging(){
 	for(int i = 0; i < 1024; i++){
 		page_directory[i] = 0x00000002;
 	}
-
+	
+	uint32_t map_addr = 0;
 	for(int i = 0; i < 1024; i++)
 	{
 		for(int j = 0; j < 1024; j++){
 			// As the address is page aligned, it will always leave 12 bits zeroed.
 			// Those bits are used by the attributes ;)
-			page_tables[i][j] = ((i * 1024 * 0x1000) + j * 0x1000) | 3; // attributes: supervisor level, read/write, present.
+			page_tables[i][j] = map_addr | 3; // attributes: supervisor level, read/write, present.
+			map_addr += 4096;
 		}
 	}
 
