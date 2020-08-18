@@ -3,6 +3,7 @@ CFLAGS =-I . -std=gnu99 -ffreestanding -g -c -O3
 LDFLAGS = -ffreestanding -nostdlib -g -T linker.ld
 
 SRC = $(wildcard *.c) $(wildcard *.S)
+EXTOBJ = $(wildcard io/*.o) $(wildcard interrupt/*.o)
 OBJ = $(patsubst %.c, %.o, $(patsubst %.S, %.o, $(SRC)))
 
 %.o: %.S
@@ -12,7 +13,9 @@ OBJ = $(patsubst %.c, %.o, $(patsubst %.S, %.o, $(SRC)))
 	$(CC) $(CFLAGS) $< -o $@
 
 kernel: $(OBJ)
-	$(CC) $(LDFLAGS) $^ -o kernel.bin
+	$(MAKE) -C io
+	$(MAKE) -C interrupt
+	$(CC) $(LDFLAGS) $^ $(EXTOBJ) -o kernel.bin
 
 .PHONY: clean
 clean:

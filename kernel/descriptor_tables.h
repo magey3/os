@@ -36,5 +36,18 @@ typedef struct {
 	uint16_t iopb;
 } __attribute__((packed)) TSS;
 
+typedef struct {
+	uint16_t offset_low;
+	uint16_t selector;
+	uint8_t zero;
+	uint8_t type_attr;
+	uint16_t offset_high;
+} __attribute__((packed)) IDT;
+
+typedef struct {
+	uint16_t size;
+	IDT* offset;
+} __attribute__((packed)) IDTR;
+
 void init_descriptor_tables();
 #endif

@@ -15,26 +15,13 @@
 
 .section .data
 .global gdt
-	/*gdt:
-	.long 0
-	.long 0
-	.word 0xffff
-	.word 0
-	.byte 0
-	.byte 0x9a
-	.byte 0xCF
-	.byte 0
-	.word 0xffff
-	.word 0
-	.byte 0
-	.byte 0x92
-	.byte 0xCF
-	.byte 0*/
-	
 	.align 16
 .section .bss
 	gdt:
 	.skip 32
+.global idt
+	idt:
+	.skip 2048
 	gdtr:
 	.word 0
 	.long 0
@@ -63,6 +50,12 @@
 	set_tss:
 	mov 4(%esp), %ax
 	ltr %ax
+	ret
+.global load_idt
+	load_idt:
+	mov 4(%esp), %eax
+	lidt (%eax)
+	sti
 	ret
 
 .global load_page_directory
