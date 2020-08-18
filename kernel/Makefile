@@ -1,5 +1,5 @@
 CC = i686-elf-gcc
-CFLAGS = -std=gnu99 -ffreestanding -g -c -O3
+CFLAGS =-I . -std=gnu99 -ffreestanding -g -c -O3
 LDFLAGS = -ffreestanding -nostdlib -g -T linker.ld
 
 SRC = $(wildcard *.c) $(wildcard *.S)
