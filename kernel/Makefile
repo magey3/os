@@ -19,4 +19,6 @@ kernel: $(OBJ)
 
 .PHONY: clean
 clean:
+	$(MAKE) -C io clean
+	$(MAKE) -C interrupt clean
 	rm $(OBJ) kernel.bin
