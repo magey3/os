@@ -89,9 +89,11 @@ void print(const char* str){
 void init(){
 	init_descriptor_tables();
 	setup_paging();
+
+	kmain();
 }
 
-void kernel_main(){
+void kmain(){
 	term_init();
 	
 	term_color = BG_BLACK | FG_GREEN;

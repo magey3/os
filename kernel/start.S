@@ -1,4 +1,4 @@
-.extern kernel_main
+.extern kmain
 .global start
 .global set_gdt
 .global gdt_flush
