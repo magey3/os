@@ -82,6 +82,8 @@
 .extern init
 	start:
 	mov $stack_top, %esp
+	push %ebx
+	push %eax
 	call init
 
 	hang:

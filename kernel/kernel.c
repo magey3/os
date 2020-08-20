@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "descriptor_tables.h"
-#include "paging.h"
+#include "kernel.h"
 
 #if defined(__linux__)
 	#error "This code must be compiled with a cross-compiler"
@@ -86,12 +85,7 @@ void print(const char* str){
 		putc(str[i]);
 }
 
-void init(){
-	init_descriptor_tables();
-	setup_paging();
 
-	kmain();
-}
 
 void kmain(){
 	term_init();
