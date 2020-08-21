@@ -1,9 +1,8 @@
 CC=x86_64-elf-gcc
-CFLAGS=-mno-red-zone -mno-mmx -mno-sse -mno-sse2 -I . -std=gnu99 -ffreestanding -g -c -O3
+CFLAGS=-mno-red-zone -mno-mmx -mno-sse -mno-sse2 -I . -std=gnu99 -ffreestanding -g -c -O3 -mgeneral-regs-only
 LDFLAGS=-n -ffreestanding -nostdlib -g -T linker.ld
 
 SRC= $(wildcard *.c) $(wildcard *.S)
-EXTOBJ=$(wildcard interrupts/*.o)
 OBJ=$(patsubst %.c, %.o, $(patsubst %.S, %.o, $(SRC)))
 
 %.o: %.S
@@ -12,11 +11,8 @@ OBJ=$(patsubst %.c, %.o, $(patsubst %.S, %.o, $(SRC)))
 %.o: %.c %.h
 	$(CC) $(CFLAGS) $< -o $@
 
-kernel: $(OBJ)
-	$(MAKE) -C interrupts
-	$(CC) $(LDFLAGS) $^ $(EXTOBJ) -o kernel.bin
+obj: $(OBJ)
 
 .PHONY: clean
 clean:
-	rm $(OBJ) kernel.bin
-	$(MAKE) -C interrupts clean
+	rm $(OBJ)
