@@ -1,92 +1,121 @@
-.extern kmain
+.section .text
+.code32
 .global start
-.global set_gdt
-.global gdt_flush
+	start:
+	mov $stack_top, %esp
 
-.set MB_MAGIC, 0x1BADB002
-.set MB_FLAGS, (1 << 0) | (1 << 1)
-.set MB_CHECKSUM, (0 - (MB_MAGIC + MB_FLAGS))
+	// Check bootloader magic number
+	mov %ebx, mb_info
+	cmp $0x36d76289, %eax
+	jne _hlt
+	
+	// Check cpuid extended
+	mov $0x80000000, %eax
+	cpuid
+	cmp $0x80000001, %eax
+	jb _hlt
+	
+	// Check long mode
+	mov $0x80000001, %eax
+	cpuid
+	test 1<<29, %edx
+	jz _hlt
 
-.section .multiboot
-	.align 4
-	.long MB_MAGIC
-	.long MB_FLAGS
-	.long MB_CHECKSUM
+	// Prepare page table
+	mov $0x1000, %edi // PROBABLY NOT A GOOD IDEA BUT EVERYTHING ELSE DOESNT WORK
+	mov %edi, %cr3
+	xor %eax, %eax
+	mov $4096, %ecx
+	rep stosl
+	mov %cr3, %edi
+	
+	movl $0x2003, (%edi)
+	add $0x1000, %edi
+
+	movl $0x3003, (%edi)
+	add $0x1000, %edi
+
+	movl $0x4003, (%edi)
+	add $0x1000, %edi
+
+	mov $0x00000003, %ebx
+	mov $512, %ecx
+
+	_set_entry:
+	movl %ebx, (%edi)
+	add $0x1000, %ebx
+	add $8, %edi
+	loop _set_entry
+
+	mov %cr4, %eax
+	or $(1 << 5), %eax
+	mov %eax, %cr4
+
+	// Set LM bit
+	mov $0xC0000080, %ecx
+	rdmsr
+	or $(1 << 8), %eax
+	wrmsr
+
+	// Enable paging
+	mov %cr0, %eax
+	or $(1 << 31), %eax
+	mov %eax, %cr0
+
+	// Load GDT
+	lgdt (gdtr)
+	jmp $0x08, $_exit
+
+	_exit:
+.code64
+.extern kmain
+	call kmain
+
+	_hlt:
+	cli
+	hlt
+	jmp _hlt
 
 .section .data
-.global gdt
-	.align 16
-.section .bss
-	gdt:
-	.skip 32
-.global idt
-	idt:
-	.skip 2048
-	gdtr:
+	gdt_null:
+	.word 0xffff
 	.word 0
-	.long 0
+	.byte 0
+	.byte 0
+	.byte 1
+	.byte 0
+	gdt_code:
+	.word 0
+	.word 0
+	.byte 0
+	.byte 0b10011010
+	.byte 0b10101111
+	.byte 0
+	gdt_data:
+	.word 0
+	.word 0
+	.byte 0
+	.byte 0b10010010
+	.byte 0
+	.byte 0
+	gdtr:
+	.word 24
+	.quad gdt_null
+
+.section .bss
+.align 16
+
 	stack_bottom:
 	.skip 4096
 	stack_top:
-	syscall_stack_bottom:
+	mb_info:
+	.skip 4
+	.align 4096
+	pml4t:
 	.skip 4096
-	.global syscall_stack
-	syscall_stack:
-
-
-.section .text
-	set_gdt:
-	mov $gdtr, %ebx
-	mov 4(%esp), %eax
-	mov %eax, 2(%ebx)
-	mov 8(%esp), %ax
-	mov %ax, (%ebx)
-	lgdt (%ebx)
-
-	jmp $0x08, $_flush
-	_flush:
-	ret
-.global set_tss
-	set_tss:
-	mov 4(%esp), %ax
-	ltr %ax
-	ret
-.global load_idt
-	load_idt:
-	mov 4(%esp), %eax
-	lidt (%eax)
-	sti
-	ret
-
-.global load_page_directory
-	load_page_directory:
-	push %ebp
-	mov %esp, %ebp
-	mov 8(%esp), %eax
-	mov %eax, %cr3
-	mov %ebp, %esp
-	pop %ebp
-	ret
-
-.global enable_paging
-	enable_paging:
-	push %ebp
-	mov %esp, %ebp
-	mov %cr0, %eax
-	or $0x80000000, %eax
-	mov %eax, %cr0
-	mov %ebp, %esp
-	pop %ebp
-	ret
-
-.extern init
-	start:
-	mov $stack_top, %esp
-	push %ebx
-	push %eax
-	call init
-
-	hang:
-	cli
-	hlt
-	jmp hang
+	pdpt:
+	.skip 4096
+	pdt:
+	.skip 4096
+	pt:
+	.skip 4096
