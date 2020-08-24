@@ -9,17 +9,14 @@
 	cmp $0x36d76289, %eax
 	jne _hlt
 	
-	// Check cpuid extended
-	mov $0x80000000, %eax
-	cpuid
-	cmp $0x80000001, %eax
-	jb _hlt
-	
-	// Check long mode
-	mov $0x80000001, %eax
-	cpuid
-	test 1<<29, %edx
-	jz _hlt
+	//Enable SSE
+	mov %cr0, %eax
+	and $0xfffb, %ax
+	or $0x2, %ax
+	mov %eax, %cr0
+	mov %cr4, %eax
+	or 3<<9, %ax
+	mov %eax, %cr4
 
 	// Prepare page table
 	mov $0x1000, %edi // PROBABLY NOT A GOOD IDEA BUT EVERYTHING ELSE DOESNT WORK
@@ -104,9 +101,8 @@
 
 .section .bss
 .align 16
-
 	stack_bottom:
-	.skip 4096
+	.skip 8192
 	stack_top:
 	mb_info:
 	.skip 4

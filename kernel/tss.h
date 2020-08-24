@@ -19,6 +19,6 @@ typedef struct {
 	uint16_t iopb;
 } __attribute__((packed)) tss_t;
 
-tss_t get_tss();
+void get_tss(tss_t* tss);
 
 #endif
