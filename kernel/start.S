@@ -45,18 +45,18 @@
 	loop _set_entry
 
 	mov %cr4, %eax
-	or $(1 << 5), %eax
+	or $(1<<5), %eax
 	mov %eax, %cr4
 
 	// Set LM bit
 	mov $0xC0000080, %ecx
 	rdmsr
-	or $(1 << 8), %eax
+	or $(1<<8), %eax
 	wrmsr
 
 	// Enable paging
 	mov %cr0, %eax
-	or $(1 << 31), %eax
+	or $(1<<31), %eax
 	mov %eax, %cr0
 
 	// Load GDT
